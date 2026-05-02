@@ -1,0 +1,61 @@
+[project]
+name = "physics-sandbox"
+version = "0.1.0"
+description = "Interactive physics simulation sandbox with a PySide6 GUI"
+readme = "README.md"
+authors = [
+    { name = "Martin Sundal Aspås", email = "martin.s.aspas@gmail.com" },
+]
+requires-python = ">=3.14"
+dependencies = [
+    "numpy>=2.4.4",
+    "pyqtgraph>=0.14.0",
+    "pyside6>=6.11.0",
+    "scipy>=1.17.1",
+]
+
+[project.scripts]
+physics-sandbox = "physics_sandbox.app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.12",
+    "ty>=0.0.34",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+# Allow Unicode characters we use intentionally in UI labels / docstrings.
+allowed-confusables = ["×", "θ", "ω", "α", "β", "μ", "—", "·", "−", "Σ"]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+    "RUF", # ruff-specific
+    "N",   # pep8-naming
+]
+ignore = [
+    "E741", # ambiguous variable name — we use physics conventions like l, I
+    "N803", # argument names follow physics conventions (e.g. G, M)
+    "N806", # local names follow physics conventions
+]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ty.src]
+include = ["src"]
+
+[tool.ty.environment]
+python = ".venv"
