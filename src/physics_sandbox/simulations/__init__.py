@@ -10,6 +10,7 @@ from collections.abc import Callable
 from PySide6.QtWidgets import QWidget
 
 from .base import Simulation
+from .fluid import FluidSimulation, FluidWidget
 from .orbit import OrbitSimulation, OrbitWidget
 from .pendulum import PendulumSimulation, PendulumWidget
 
@@ -26,13 +27,21 @@ def _make_pendulum() -> tuple[Simulation, QWidget]:
     return sim, PendulumWidget(sim)
 
 
+def _make_fluid() -> tuple[Simulation, QWidget]:
+    sim = FluidSimulation()
+    return sim, FluidWidget(sim)
+
+
 REGISTRY: dict[str, SimulationFactory] = {
     "N-body Gravity": _make_orbit,
     "Pendulum Chain": _make_pendulum,
+    "Fluid (smoke)": _make_fluid,
 }
 
 __all__ = [
     "REGISTRY",
+    "FluidSimulation",
+    "FluidWidget",
     "OrbitSimulation",
     "OrbitWidget",
     "PendulumSimulation",

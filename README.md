@@ -32,7 +32,8 @@ src/physics_sandbox/
 └── simulations/
     ├── base.py              # Simulation ABC + IntegratorOptions
     ├── orbit.py             # 2D Kepler orbit (RK45 variable step) + widget
-    └── pendulum.py          # damped/driven pendulum + widget
+    ├── pendulum.py          # damped/driven pendulum + widget
+    └── fluid.py             # 2D Eulerian smoke (stable fluids) + widget
 ```
 
 Each simulation lives in its own submodule and exposes a `Simulation`

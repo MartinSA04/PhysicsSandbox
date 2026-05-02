@@ -204,6 +204,113 @@ def _sun_two_planets() -> list[Body]:
     ]
 
 
+def _equal_polygon(n: int) -> list[Body]:
+    """N equal masses on a regular N-gon, all on one rigidly rotating circle.
+
+    For unit mass at radius R=1 with G=1, the inward gravitational pull from
+    the other N−1 bodies sums to F = (1/4)·Σ_j 1/sin(πj/N), and the circular
+    orbit speed is v = sqrt(F·R/m).
+    """
+    R = 1.0
+    s = sum(1.0 / np.sin(np.pi * j / n) for j in range(1, n))
+    v = float(np.sqrt(s / (4.0 * R)))
+    bodies: list[Body] = []
+    for k in range(n):
+        theta = 2.0 * np.pi * k / n
+        bodies.append(
+            Body(
+                mass=1.0,
+                x=R * float(np.cos(theta)),
+                y=R * float(np.sin(theta)),
+                vx=-v * float(np.sin(theta)),
+                vy=v * float(np.cos(theta)),
+            )
+        )
+    return bodies
+
+
+def _earth_moon_sun() -> list[Body]:
+    """Hierarchical 3-body: Sun + planet + moon orbiting the planet (G=1).
+
+    Masses are exaggerated relative to the real Sun-Earth-Moon system so the
+    moon's orbit is visible. The planet's Hill radius is ≈ a·(m/3M)^(1/3) =
+    0.149, and the moon is placed at r_moon = 0.04 (≈27% of the Hill sphere)
+    where the solar tide is well below the planet's grip — a few percent —
+    and the orbit stays bound for as long as you'll watch.
+    """
+    M_sun = 1.0
+    m_earth = 1e-2
+    m_moon = 1e-4
+    r_earth = 1.0
+    r_moon = 0.04
+    v_earth = float(np.sqrt(M_sun / r_earth))
+    v_moon_rel = float(np.sqrt(m_earth / r_moon))
+    return [
+        Body(mass=M_sun, x=0.0, y=0.0, vx=0.0, vy=0.0),
+        Body(mass=m_earth, x=r_earth, y=0.0, vx=0.0, vy=v_earth),
+        Body(mass=m_moon, x=r_earth + r_moon, y=0.0, vx=0.0, vy=v_earth + v_moon_rel),
+    ]
+
+
+def _earth_lagrange_points() -> list[Body]:
+    """Sun + Earth + tracer particles at all five Lagrange points L1..L5 (G=1).
+
+    With Sun:Earth ≈ 1000:1 the equilateral points L4, L5 sit deep in the
+    linearly stable regime (threshold ≈ 25:1) and tracers libate around them
+    indefinitely. L1, L2, L3 are saddle points: tracers placed exactly there
+    will drift off along the unstable manifold over many orbits.
+
+    Positions in the rotating frame are taken from the standard restricted
+    three-body expansions (collinear: ``α = (μ/3)^(1/3)`` to first order),
+    converted to inertial-frame velocities via ``v = ω × r`` with
+    ``ω = sqrt(M_sun / a³)``.
+    """
+    M_sun = 1.0
+    m_earth = 1e-3
+    a = 1.0
+    mu = m_earth / (M_sun + m_earth)
+    omega = float(np.sqrt(M_sun / a**3))
+    alpha = (mu / 3.0) ** (1.0 / 3.0)
+    sqrt3_2 = float(np.sqrt(3.0)) / 2.0
+
+    lpoints = (
+        (a * (1.0 - alpha), 0.0),  # L1
+        (a * (1.0 + alpha), 0.0),  # L2
+        (-a * (1.0 + 5.0 * mu / 12.0), 0.0),  # L3
+        (a * 0.5, a * sqrt3_2),  # L4
+        (a * 0.5, -a * sqrt3_2),  # L5
+    )
+
+    bodies: list[Body] = [
+        Body(mass=M_sun, x=0.0, y=0.0, vx=0.0, vy=0.0),
+        Body(mass=m_earth, x=a, y=0.0, vx=0.0, vy=omega * a),
+    ]
+    for x, y in lpoints:
+        bodies.append(Body(mass=1e-9, x=x, y=y, vx=-omega * y, vy=omega * x))
+    return bodies
+
+
+def _trojan_l4() -> list[Body]:
+    """Sun + Jupiter-analog + tracer at the leading Lagrange L4 point (G=1).
+
+    L4 is linearly stable when the mass ratio of the two primaries exceeds
+    ≈25; here Sun/Jupiter ≈ 1000, so the trojan stays near its triangular
+    libration point indefinitely.
+    """
+    M_sun = 1.0
+    m_jupiter = 1e-3
+    m_trojan = 1e-9
+    a = 1.0
+    v = float(np.sqrt(M_sun / a))
+    cos60 = 0.5
+    sin60 = float(np.sqrt(3.0)) / 2.0
+    return [
+        Body(mass=M_sun, x=0.0, y=0.0, vx=0.0, vy=0.0),
+        Body(mass=m_jupiter, x=a, y=0.0, vx=0.0, vy=v),
+        Body(mass=m_trojan, x=a * cos60, y=a * sin60, vx=-v * sin60, vy=v * cos60),
+    ]
+
+
 def _random_three() -> list[Body]:
     rng = np.random.default_rng()
     bodies: list[Body] = []
@@ -224,6 +331,12 @@ _PRESETS: dict[str, list[Body]] = {
     "2-body circular": _default_two_body(),
     "Figure-8": _figure_eight(),
     "Sun + 2 planets": _sun_two_planets(),
+    "Lagrange triangle": _equal_polygon(3),
+    "Square (4-body)": _equal_polygon(4),
+    "Pentagon (5-body)": _equal_polygon(5),
+    "Sun + Earth + Moon": _earth_moon_sun(),
+    "Trojan at L4": _trojan_l4(),
+    "Sun + Earth + L1..L5": _earth_lagrange_points(),
 }
 
 

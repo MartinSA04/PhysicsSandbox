@@ -33,7 +33,7 @@ target-version = "py314"
 
 [tool.ruff.lint]
 # Allow Unicode characters we use intentionally in UI labels / docstrings.
-allowed-confusables = ["×", "θ", "ω", "α", "β", "μ", "—", "·", "−", "Σ"]
+allowed-confusables = ["×", "θ", "ω", "α", "β", "μ", "ρ", "—", "·", "−", "Σ"]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
